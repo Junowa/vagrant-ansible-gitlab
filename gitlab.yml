@@ -1,0 +1,41 @@
+---
+
+- hosts: all
+  become: yes
+
+  tasks:
+    - name: add gitlab signing key
+      apt_key:
+        url: "https://packages.gitlab.com/gitlab/gitlab-ce/gpgkey"
+        state: present
+
+    - name: add gitlab repository
+      apt_repository:
+        repo: deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu/ xenial main
+        filename: gitab-ce
+        state: present
+    
+    # Install GitLab and its dependencies.
+    - name: Install GitLab dependencies.
+      package: 
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      with_items:
+        - openssh-server
+        - postfix
+        - curl
+        - openssl
+        - tzdata
+        - ca-certificates
+        - apt-transport-https
+
+    - name: Install GitLab
+      package:
+        name: gitlab-ce=12.6.4-ce.0
+      environment:
+        GITLAB_ROOT_EMAIL: some@email.com
+        GITLAB_ROOT_PASSWORD: NewPassw0rd 
+        EXTERNAL_URL: http://gitlab
+
+
